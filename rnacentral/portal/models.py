@@ -1331,7 +1331,7 @@ class Gff3Formatter(object):
                 continue
             attributes = {
                 'ID': '_'.join([self.xref.accession.accession, 'exon' + str(i+1)]),
-                'Name': self.xref.upi.upi,
+                'Name': '%s_%s' % (self.xref.upi.upi, self.xref.taxid),
                 'Parent': self.xref.accession.accession,
                 'type': self.xref.accession.get_rna_type(),
             }
