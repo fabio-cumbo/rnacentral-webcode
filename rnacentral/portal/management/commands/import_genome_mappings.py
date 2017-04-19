@@ -28,10 +28,18 @@ prevent partial updates.
 
 
 class Importer():
-    def coordinate(self, data):
+    def coordinate(self, db_names, data):
         xrefs = Xref.objects.\
-            filter(upi=data['upi'], taxid=data['taxid'], deleted='N').\
-            all()
+            filter(upi=data['upi'], taxid=data['taxid'], deleted='N')
+
+        if xrefs.count() > 1:
+            for db_name in db_names:
+                possible = xrefs.filter(db__descr=db_name)
+                if possible.count() == 1:
+                    xrefs = possible
+                    break
+
+        xrefs = xrefs.all()
 
         if not xrefs:
             print ValueError("No xrefs for %s found" % data)
@@ -49,8 +57,6 @@ class Importer():
             print("No existing coordinates found, cannot import %s" % data)
             return None
         elif len(coordinates) > 1:
-            for coord in coordinates:
-                print(coord.__dict__)
             print ValueError("Too many coordinates (%i) for %s" % (len(coordinates), data))
             return None
 
@@ -61,11 +67,12 @@ class Importer():
             raise ValueError('Could not import because already existing data')
         return coordinate
 
-    def update(self, data):
+    def update(self, db_names, data):
         if len(data['exons']) != 1:
-            raise ValueError("Can only insert single exon mappings")
+            print ValueError("Can only insert single exon mappings")
+            return None
 
-        coordinate = self.coordinate(data)
+        coordinate = self.coordinate(db_names, data)
         if not coordinate:
             return None
         exon = data['exons'][0]
@@ -75,7 +82,7 @@ class Importer():
         coordinate.chromosome = exon['chromosome']
         return coordinate
 
-    def __call__(self, filename, **kwargs):
+    def __call__(self, db_names, filename, **kwargs):
         dry_run = kwargs.get('dry_run', False)
         with open(filename, 'rb') as raw:
             data = json.load(raw)
@@ -83,7 +90,7 @@ class Importer():
         # We process the entire dataset before saving to ensure we do end up in
         # a state where only some of the data has been inserted, which makes
         # debugging and rerunning harder.
-        updated = (self.update(entry) for entry in data)
+        updated = (self.update(db_names, entry) for entry in data)
         updated = [u for u in updated if u]
         print("Found %i/%i insertable entries" % (len(updated), len(data)))
 
@@ -100,6 +107,10 @@ class Command(BaseCommand):
                     dest='json_file',
                     default=False,
                     help='[Required] Path to JSON mappings to import'),
+        make_option('-n', '--names',
+                    dest='db_names',
+                    default='',
+                    help="[Required] Names of database to use"),
         make_option('-d', '--dry-run',
                     action='store_true',
                     dest='dry_run',
@@ -113,4 +124,7 @@ class Command(BaseCommand):
         json_file = kwargs['json_file']
         if not json_file:
             raise CommandError('Please specify input file')
-        Importer()(json_file, **kwargs)
+        db_names = kwargs.pop('db_names').upper().split(',')
+        if not db_names:
+            raise CommandError("Must specify DB to use")
+        Importer()(db_names, json_file, **kwargs)
