@@ -17,13 +17,11 @@ import operator as op
 from optparse import make_option
 from django.core.management.base import BaseCommand, CommandError
 
-from portal.models import Xref
-
-# from portal.management.commands.common_exporters.oracle_connection import \
-#     OracleConnection
+from portal.management.commands.common_exporters.oracle_connection import \
+    OracleConnection
 
 
-class SingleExporter(object):
+class SingleExporter(OracleConnection):
     """
     This class is the callable that will compute and save the export for a
     database.
@@ -36,12 +34,28 @@ class SingleExporter(object):
         """
 
         if database.upper() == 'PDBE':
-            getter = op.attrgetter('external_id', 'optional_id')
+            getter = op.itemgetter('external_id', 'optional_id')
 
             def fn(accession):
                 return "_".join(getter(accession))
             return fn
-        return op.attrgetter('external_id')
+        return op.itemgetter('external_id')
+
+    def query(self, database):
+        sql = '''
+        select distinct
+            rna.upi,
+            acc.external_id,
+            acc.optional_id
+        from rna, xref, rnc_accessions acc
+        where
+            rna.upi = xref.upi
+            and acc.accession = xref.ac
+            and xref.deleted = 'N'
+            and acc.database = :name
+        '''
+        self.get_cursor()
+        self.cursor.execute(sql, name=database.upper())
 
     def data(self, database):
         """
@@ -52,13 +66,12 @@ class SingleExporter(object):
         A dict of 'external' and 'upi' for the external id and the RNAcentral
         UPI respectively.
         """
-        query = Xref.objects.filter(deleted='N').\
-            filter(db__descr=database.upper()).\
-            select_related('accession', 'upi')
-
+        self.query(database)
         external_generator = self.external(database)
-        for row in query:
-            yield (external_generator(row.accession), row.upi.upi)
+        for raw in self.cursor:
+            row = self.row_to_dict(raw)
+            external = external_generator(row)
+            yield (external, row['upi'])
 
     def __call__(self, database, filename):
         """
