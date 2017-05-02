@@ -30,10 +30,16 @@ class SingleExporter(object):
     """
 
     def external(self, database):
+        """
+        A method which will generate a function that generates the external id
+        we use for the given database.
+        """
+
         if database.upper() == 'PDBE':
+            getter = op.attrgetter('external_id', 'optional_id')
+
             def fn(accession):
-                getter = op.attrgetter('external_id', 'optional_id')
-                return '%s_%s' % getter(accession)
+                return "_".join(getter(accession))
             return fn
         return op.attrgetter('external_id')
 
@@ -46,17 +52,13 @@ class SingleExporter(object):
         A dict of 'external' and 'upi' for the external id and the RNAcentral
         UPI respectively.
         """
-        query = Xref.filter(deleted='N').\
+        query = Xref.objects.filter(deleted='N').\
             filter(db__descr=database.upper()).\
             select_related('accession', 'upi')
 
         external_generator = self.external(database)
         for row in query:
-            external = external_generator(row.accession)
-            yield {
-                'external': external,
-                'upi': row.upi.upi,
-            }
+            yield (external_generator(row.accession), row.upi.upi)
 
     def __call__(self, database, filename):
         """
@@ -64,8 +66,7 @@ class SingleExporter(object):
         """
         data = self.data(database)
         with open(filename, 'wb') as out:
-            writer = csv.DictWriter(out, fieldnames=['external', 'upi'],
-                                    delimiter='\t', quoting=csv.QUOTE_NONE)
+            writer = csv.writer(out, delimiter='\t', quoting=csv.QUOTE_NONE)
             writer.writerows(data)
 
 
