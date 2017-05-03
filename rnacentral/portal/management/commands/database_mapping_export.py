@@ -11,6 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import os
 import csv
 import operator as op
 
@@ -19,6 +20,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 from portal.management.commands.common_exporters.oracle_connection import \
     OracleConnection
+from porta.config import expert_databases
 
 
 class SingleExporter(OracleConnection):
@@ -101,10 +103,36 @@ class Command(BaseCommand):
                     dest='database',
                     default=False,
                     help='[Required] Name of database to export'),
+        make_option('--base',
+                    dest='base',
+                    default=os.path.join('export', 'results'),
+                    help='What directory to write to when bsubing'),
+        make_option('-b', '--bsub-script',
+                    dest='bsub',
+                    default=False,
+                    help='Generate a script for to bsub'),
     )
     help = ('Export a mapping from external ID to RNAcentral ID')
 
+    def script(self, base):
+        cmd = '''
+        bsub -oo {db}_output.txt -eo {db}_error.txt python manage.py {name} -d {db} -f {filename}
+        '''
+        cmds = []
+        for database in expert_databases:
+            cmds.append(cmd.format(
+                name='database_mapping_export',
+                db=database['name'],
+                filename=os.path.join(base, database['name'] + '.txt'),
+            ))
+        return '\n'.join(cmds)
+
     def handle(self, *args, **options):
+        if options['bsub']:
+            script = self.script(options['base'])
+            print(script)
+            return
+
         if not options['database']:
             raise CommandError('Must specify database to use')
         if not options['filename']:
