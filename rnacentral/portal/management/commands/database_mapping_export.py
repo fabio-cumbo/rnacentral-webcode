@@ -41,7 +41,7 @@ class SingleExporter(OracleConnection):
             return fn
         return op.itemgetter('external_id')
 
-    def query(self, database):
+    def run_query(self, database):
         sql = '''
         select distinct
             rna.upi,
@@ -53,6 +53,7 @@ class SingleExporter(OracleConnection):
             and acc.accession = xref.ac
             and xref.deleted = 'N'
             and acc.database = :name
+        order by upi, external_id, optional_id
         '''
         self.get_cursor()
         self.cursor.execute(sql, name=database.upper())
@@ -66,12 +67,15 @@ class SingleExporter(OracleConnection):
         A dict of 'external' and 'upi' for the external id and the RNAcentral
         UPI respectively.
         """
-        self.query(database)
+        self.run_query(database)
         external_generator = self.external(database)
+        last = None
         for raw in self.cursor:
             row = self.row_to_dict(raw)
-            external = external_generator(row)
-            yield (external, row['upi'])
+            result = (external_generator(row), row['upi'])
+            if result != last:
+                last = result
+                yield result
 
     def __call__(self, database, filename):
         """
