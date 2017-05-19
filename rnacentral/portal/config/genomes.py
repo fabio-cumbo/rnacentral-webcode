@@ -81,32 +81,32 @@ genomes = [
             'end': 118277850,
         },
     },
-    # {
-    #     'species': 'Felis catus',
-    #     'synonyms': ['cat'],
-    #     'assembly': 'Felis_catus_6.2',
-    #     'assembly_ucsc': 'felCat5',
-    #     'taxid': 9685,
-    #     'division': 'Ensembl',
-    #     'example_location': {
-    #         'chromosome': 'X',
-    #         'start': 18058223,
-    #         'end': 18058546,
-    #     },
-    # },
-    # {
-    #     'species': 'Macaca mulatta',
-    #     'synonyms': ['macaque'],
-    #     'assembly': 'MMUL_1',
-    #     'assembly_ucsc': '', # no matching assembly
-    #     'taxid': 9544,
-    #     'division': 'Ensembl',
-    #     'example_location': {
-    #         'chromosome': 1,
-    #         'start': 146238837,
-    #         'end': 146238946,
-    #     },
-    # },
+    {
+        'species': 'Felis catus',
+        'synonyms': ['cat'],
+        'assembly': 'Felis_catus_6.2',
+        'assembly_ucsc': 'felCat5',
+        'taxid': 9685,
+        'division': 'Ensembl',
+        'example_location': {
+            'chromosome': 'X',
+            'start': 18058223,
+            'end': 18058546,
+        },
+    },
+    {
+        'species': 'Macaca mulatta',
+        'synonyms': ['macaque'],
+        'assembly': 'MMUL_1',
+        'assembly_ucsc': '', # no matching assembly
+        'taxid': 9544,
+        'division': 'Ensembl',
+        'example_location': {
+            'chromosome': 1,
+            'start': 146238837,
+            'end': 146238946,
+        },
+    },
     {
         'species': 'Pan troglodytes',
         'synonyms': ['chimp'],
@@ -133,32 +133,32 @@ genomes = [
             'end': 22007119,
         },
     },
-    # {
-    #     'species': 'Gallus gallus',
-    #     'synonyms': ['chicken'],
-    #     'assembly': 'Galgal4',
-    #     'assembly_ucsc': 'galGal4',
-    #     'taxid': 9031,
-    #     'division': 'Ensembl',
-    #     'example_location': {
-    #         'chromosome': 9,
-    #         'start': 15676031,
-    #         'end': 15676160,
-    #     },
-    # },
-    # {
-    #     'species': 'Xenopus tropicalis',
-    #     'synonyms': ['frog'],
-    #     'assembly': 'JGI_4.2',
-    #     'assembly_ucsc': 'xenTro3',
-    #     'taxid': 8364,
-    #     'division': 'Ensembl',
-    #     'example_location': {
-    #         'chromosome': 'NC_006839',
-    #         'start': 11649,
-    #         'end': 11717,
-    #     },
-    # },
+    {
+        'species': 'Gallus gallus',
+        'synonyms': ['chicken'],
+        'assembly': 'Galgal4',
+        'assembly_ucsc': 'galGal4',
+        'taxid': 9031,
+        'division': 'Ensembl',
+        'example_location': {
+            'chromosome': 9,
+            'start': 15676031,
+            'end': 15676160,
+        },
+    },
+    {
+        'species': 'Xenopus tropicalis',
+        'synonyms': ['frog'],
+        'assembly': 'JGI_4.2',
+        'assembly_ucsc': 'xenTro3',
+        'taxid': 8364,
+        'division': 'Ensembl',
+        'example_location': {
+            'chromosome': 'NC_006839',
+            'start': 11649,
+            'end': 11717,
+        },
+    },
     # Ensembl Fungi
     # {
     #     'species': 'Saccharomyces cerevisiae',
