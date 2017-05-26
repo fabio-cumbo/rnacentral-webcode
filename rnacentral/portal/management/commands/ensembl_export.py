@@ -199,7 +199,6 @@ class Exporter(object):
         grouping = ('upi', 'taxid')
         xrefs = xrefs.\
             select_related('upi', 'accession', 'db').\
-            prefetch_related('upi__precomputed').\
             order_by(*grouping)
 
         # This will group all xrefs by the tuple of values in their 'upi'
