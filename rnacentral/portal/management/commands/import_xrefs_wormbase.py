@@ -32,6 +32,7 @@ def run():
     """
     filename = 'wormbase-xrefs.txt'
     found = not_found = 0
+    duplicate_references = 0
 
     with open(filename, 'r') as f:
         lines = f.readlines()
@@ -101,6 +102,15 @@ def run():
                 # create new reference_map object
                 references = Reference_map.objects.filter(accession=ena_id).all()
                 for reference in references:
+                    duplicates = Reference_map.objects.\
+                        filter(accession=accession).\
+                        filter(data_id=reference.data_id)
+                    if duplicates.exists():
+                        print('Duplicate reference %s for %s' %
+                              (reference.data_id, accession))
+                        duplicate_references += 1
+                        continue
+
                     reference.accession = accession
                     print reference
                     reference.save()
@@ -113,6 +123,7 @@ def run():
 
         print 'Found %i' % found
         print 'Not found %i' % not_found
+        print 'Duplicate references %i' % duplicate_references
 
 
 class Command(BaseCommand):
