@@ -42,6 +42,7 @@ class Accession(models.Model):
     non_coding_id = models.CharField(max_length=100)
     database = models.CharField(max_length=20)
     external_id = models.CharField(max_length=150)
+    chromosome = models.CharField(max_length=200)
 
     # GeneID (without coordinates); used to find splice variants for lncRNAs OR mature/precursor RNAs for miRNAs
     optional_id = models.CharField(max_length=100)
